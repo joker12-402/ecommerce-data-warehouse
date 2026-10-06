@@ -234,3 +234,19 @@ ROW_NUMBER() OVER (
 - 使用 Airflow 编排数仓任务
 - 将 MySQL 版本迁移到 Hive 或 Spark
 - 使用 Superset 或 Metabase 做可视化看板
+## v1.2 SQL 性能优化与指标准确性
+
+本版本补充了交易数仓场景下的 SQL 优化说明，重点关注大表 JOIN、退款表一对多关联、COUNT DISTINCT 去重开销等问题。
+
+新增内容：
+
+- `docs/05_sql_optimization.md`：SQL 性能优化与指标准确性说明。
+- `sql/07_trade_sql_optimization_demo.sql`：交易场景 SQL 优化示例。
+
+优化重点：
+
+- 使用 `dt` 条件进行分区裁剪，避免全表扫描；
+- JOIN 前进行字段裁剪，避免 `SELECT *`；
+- 先过滤有效数据，再参与 JOIN；
+- 退款表先按 `order_id` 聚合到订单粒度，再与支付表关联，避免一对多 JOIN 导致支付金额被重复放大；
+- 在 DWS 层沉淀用户日粒度汇总表，减少 ADS 层反复 `COUNT DISTINCT user_id` 的计算开销。
